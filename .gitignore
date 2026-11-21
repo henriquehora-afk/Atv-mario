@@ -1,0 +1,27 @@
+# Java and Maven
+**/target/
+**/build/
+**/.mvn/wrapper/maven-wrapper.jar
+
+# Front-end dependencies and generated output
+**/node_modules/
+**/dist/
+**/.next/
+**/.nuxt/
+**/coverage/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+**/*.local
+
+# IDE and operating system files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
