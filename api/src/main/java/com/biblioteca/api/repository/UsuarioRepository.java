@@ -1,21 +1,21 @@
 package com.biblioteca.api.repository;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import com.biblioteca.api.model.Usuario;
 
 public interface UsuarioRepository {
 
-	boolean saveIfEmailUnique(Usuario usuario);
+	/** Salva e devolve o usuário com o id gerado pelo banco. Vazio se o e-mail já existir. */
+	Optional<Usuario> saveIfEmailUnique(Usuario usuario);
 
 	boolean updateIfEmailUnique(Usuario usuario);
 
-	Optional<Usuario> findById(UUID id);
+	Optional<Usuario> findById(Long id);
 
 	Optional<Usuario> findByEmail(String email);
 
 	boolean existsByEmail(String email);
 
-	boolean deleteById(UUID id);
+	boolean deleteById(Long id);
 }

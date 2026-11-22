@@ -1,11 +1,10 @@
 package com.biblioteca.api.model;
 
 import java.time.Instant;
-import java.util.UUID;
 
 public class Usuario {
 
-	private final UUID id;
+	private final Long id;
 	private final String nome;
 	private final String email;
 	private final String senhaHash;
@@ -13,7 +12,7 @@ public class Usuario {
 	private final Instant atualizadoEm;
 
 	public Usuario(
-			UUID id,
+			Long id,
 			String nome,
 			String email,
 			String senhaHash,
@@ -27,7 +26,7 @@ public class Usuario {
 		this.atualizadoEm = atualizadoEm;
 	}
 
-	public UUID getId() {
+	public Long getId() {
 		return id;
 	}
 

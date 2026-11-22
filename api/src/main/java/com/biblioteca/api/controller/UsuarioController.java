@@ -1,7 +1,5 @@
 package com.biblioteca.api.controller;
 
-import java.util.UUID;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -44,19 +42,19 @@ public class UsuarioController {
 	}
 
 	@GetMapping("/{id}")
-	public UsuarioResponse buscarPorId(@PathVariable("id") UUID id) {
+	public UsuarioResponse buscarPorId(@PathVariable("id") Long id) {
 		return usuarioService.buscarPorId(id);
 	}
 
 	@PutMapping("/{id}")
 	public UsuarioResponse atualizar(
-			@PathVariable("id") UUID id,
+			@PathVariable("id") Long id,
 			@Valid @RequestBody AtualizarUsuarioRequest request) {
 		return usuarioService.atualizar(id, request);
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> excluir(@PathVariable("id") UUID id) {
+	public ResponseEntity<Void> excluir(@PathVariable("id") Long id) {
 		usuarioService.excluir(id);
 		return ResponseEntity.noContent().build();
 	}

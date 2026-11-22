@@ -1,10 +1,10 @@
 package com.biblioteca.api.service;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Locale;
-import java.util.UUID;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.biblioteca.api.dto.request.AtualizarUsuarioRequest;
@@ -22,28 +22,29 @@ import com.biblioteca.api.repository.UsuarioRepository;
 public class UsuarioService {
 
 	private final UsuarioRepository usuarioRepository;
-	private final BCryptPasswordEncoder passwordEncoder;
+	private final PasswordEncoder passwordEncoder; // interface, não a classe BCrypt
 
-	public UsuarioService(UsuarioRepository usuarioRepository, BCryptPasswordEncoder passwordEncoder) {
+	public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
 		this.usuarioRepository = usuarioRepository;
 		this.passwordEncoder = passwordEncoder;
 	}
 
 	public UsuarioResponse criar(CriarUsuarioRequest request) {
-		Instant agora = Instant.now();
-		Usuario usuario = new Usuario(
-				UUID.randomUUID(),
+		Instant agora = agora();
+		Usuario novo = new Usuario(
+				null, // o id é gerado pelo banco (1, 2, 3...)
 				request.nome(),
 				normalizarEmail(request.email()),
 				passwordEncoder.encode(request.senha()),
 				agora,
 				agora);
 
-		if (!usuarioRepository.saveIfEmailUnique(usuario)) {
-			throw new EmailJaCadastradoException();
-		}
+		// O repositório devolve o usuário já com o id gerado.
+		// Se vier vazio, o e-mail já estava cadastrado.
+		Usuario salvo = usuarioRepository.saveIfEmailUnique(novo)
+				.orElseThrow(EmailJaCadastradoException::new);
 
-		return paraResponse(usuario);
+		return paraResponse(salvo);
 	}
 
 	public LoginResponse login(LoginRequest request) {
@@ -56,7 +57,7 @@ public class UsuarioService {
 		return new LoginResponse(paraResponse(usuario));
 	}
 
-	public UsuarioResponse atualizar(UUID id, AtualizarUsuarioRequest request) {
+	public UsuarioResponse atualizar(Long id, AtualizarUsuarioRequest request) {
 		Usuario atual = usuarioRepository.findById(id)
 				.orElseThrow(UsuarioNaoEncontradoException::new);
 		Usuario atualizado = new Usuario(
@@ -65,7 +66,7 @@ public class UsuarioService {
 				normalizarEmail(request.email()),
 				atual.getSenhaHash(),
 				atual.getCriadoEm(),
-				Instant.now());
+				agora());
 
 		if (!usuarioRepository.updateIfEmailUnique(atualizado)) {
 			if (usuarioRepository.findById(id).isEmpty()) {
@@ -77,16 +78,21 @@ public class UsuarioService {
 		return paraResponse(atualizado);
 	}
 
-	public UsuarioResponse buscarPorId(UUID id) {
+	public UsuarioResponse buscarPorId(Long id) {
 		Usuario usuario = usuarioRepository.findById(id)
 				.orElseThrow(UsuarioNaoEncontradoException::new);
 		return paraResponse(usuario);
 	}
 
-	public void excluir(UUID id) {
+	public void excluir(Long id) {
 		if (!usuarioRepository.deleteById(id)) {
 			throw new UsuarioNaoEncontradoException();
 		}
+	}
+
+	// Microssegundos: mesma precisão do TIMESTAMPTZ do PostgreSQL
+	private Instant agora() {
+		return Instant.now().truncatedTo(ChronoUnit.MICROS);
 	}
 
 	private String normalizarEmail(String email) {
