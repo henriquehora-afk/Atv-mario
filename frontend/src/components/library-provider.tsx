@@ -18,7 +18,7 @@ type LibraryContextValue = LibraryState & {
   clearHistory: () => void;
 };
 
-const STORAGE_KEY = "bai:library:v1";
+const STORAGE_KEY = "bai:library:v2";
 const EMPTY: LibraryState = { favorites: [], collections: [], history: [] };
 const LibraryContext = createContext<LibraryContextValue | null>(null);
 

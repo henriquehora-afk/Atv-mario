@@ -4,9 +4,11 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
 
+
 const LINKS = [
   { href: "/", label: "Início" },
   { href: "/buscar", label: "Buscar" },
+  { href: "/obras/nova", label: "Adicionar obra" },
   { href: "/biblioteca", label: "Biblioteca" },
   { href: "/perfil", label: "Meu perfil" },
 ];

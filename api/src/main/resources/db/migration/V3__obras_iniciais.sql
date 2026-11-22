@@ -1,0 +1,32 @@
+-- V3: obras de exemplo com PDF de acesso aberto (arXiv).
+-- Os resumos são descrições curtas próprias, não os abstracts originais.
+
+INSERT INTO obras (fonte, titulo, autores, ano, tipo, resumo, doi, url, palavras_chave, pdf_url) VALUES
+('arXiv', 'Attention Is All You Need',
+ ARRAY['Ashish Vaswani', 'Noam Shazeer', 'Niki Parmar', 'Jakob Uszkoreit', 'Llion Jones', 'Aidan N. Gomez', 'Łukasz Kaiser', 'Illia Polosukhin'],
+ 2017, 'Artigo',
+ 'Propõe o Transformer, arquitetura de tradução automática baseada apenas em mecanismos de atenção, sem recorrência nem convoluções, mais paralelizável e com resultados superiores aos modelos da época.',
+ '10.48550/arXiv.1706.03762', 'https://arxiv.org/abs/1706.03762',
+ ARRAY['transformer', 'atenção', 'tradução automática', 'aprendizado profundo'],
+ 'https://arxiv.org/pdf/1706.03762'),
+('arXiv', 'Deep Residual Learning for Image Recognition',
+ ARRAY['Kaiming He', 'Xiangyu Zhang', 'Shaoqing Ren', 'Jian Sun'],
+ 2015, 'Artigo',
+ 'Apresenta as redes residuais (ResNet), que usam conexões de atalho para treinar redes neurais muito profundas, vencendo competições de classificação de imagens.',
+ '10.48550/arXiv.1512.03385', 'https://arxiv.org/abs/1512.03385',
+ ARRAY['visão computacional', 'redes residuais', 'classificação de imagens'],
+ 'https://arxiv.org/pdf/1512.03385'),
+('arXiv', 'BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding',
+ ARRAY['Jacob Devlin', 'Ming-Wei Chang', 'Kenton Lee', 'Kristina Toutanova'],
+ 2018, 'Artigo',
+ 'Introduz o BERT, modelo de linguagem pré-treinado de forma bidirecional que pode ser ajustado para várias tarefas de processamento de linguagem natural com poucas mudanças.',
+ '10.48550/arXiv.1810.04805', 'https://arxiv.org/abs/1810.04805',
+ ARRAY['processamento de linguagem natural', 'BERT', 'pré-treinamento'],
+ 'https://arxiv.org/pdf/1810.04805'),
+('arXiv', 'Adam: A Method for Stochastic Optimization',
+ ARRAY['Diederik P. Kingma', 'Jimmy Ba'],
+ 2014, 'Artigo',
+ 'Descreve o Adam, otimizador de primeira ordem com taxas de aprendizado adaptativas por parâmetro, hoje um dos mais usados no treinamento de redes neurais.',
+ '10.48550/arXiv.1412.6980', 'https://arxiv.org/abs/1412.6980',
+ ARRAY['otimização', 'gradiente estocástico', 'aprendizado de máquina'],
+ 'https://arxiv.org/pdf/1412.6980');

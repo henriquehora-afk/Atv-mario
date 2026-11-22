@@ -7,90 +7,96 @@ import java.util.Locale;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.biblioteca.api.dto.request.AtualizarUsuarioRequest;
-import com.biblioteca.api.dto.request.CriarUsuarioRequest;
+import com.biblioteca.api.dto.request.ChangePasswordRequest;
 import com.biblioteca.api.dto.request.LoginRequest;
-import com.biblioteca.api.dto.response.LoginResponse;
-import com.biblioteca.api.dto.response.UsuarioResponse;
+import com.biblioteca.api.dto.request.RegisterRequest;
+import com.biblioteca.api.dto.request.UpdateMeRequest;
+import com.biblioteca.api.dto.response.UserResponse;
 import com.biblioteca.api.exception.CredenciaisInvalidasException;
 import com.biblioteca.api.exception.EmailJaCadastradoException;
+import com.biblioteca.api.exception.SenhaAtualIncorretaException;
 import com.biblioteca.api.exception.UsuarioNaoEncontradoException;
 import com.biblioteca.api.model.Usuario;
 import com.biblioteca.api.repository.UsuarioRepository;
 
+/** Regras de usuário. Depende só das abstrações UsuarioRepository e PasswordEncoder. */
 @Service
 public class UsuarioService {
 
 	private final UsuarioRepository usuarioRepository;
-	private final PasswordEncoder passwordEncoder; // interface, não a classe BCrypt
+	private final PasswordEncoder passwordEncoder;
 
 	public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
 		this.usuarioRepository = usuarioRepository;
 		this.passwordEncoder = passwordEncoder;
 	}
 
-	public UsuarioResponse criar(CriarUsuarioRequest request) {
+	public UserResponse registrar(RegisterRequest request) {
 		Instant agora = agora();
 		Usuario novo = new Usuario(
-				null, // o id é gerado pelo banco (1, 2, 3...)
-				request.nome(),
+				null, // gerado pelo banco
+				request.name(),
 				normalizarEmail(request.email()),
-				passwordEncoder.encode(request.senha()),
+				passwordEncoder.encode(request.password()),
 				agora,
 				agora);
-
-		// O repositório devolve o usuário já com o id gerado.
-		// Se vier vazio, o e-mail já estava cadastrado.
-		Usuario salvo = usuarioRepository.saveIfEmailUnique(novo)
-				.orElseThrow(EmailJaCadastradoException::new);
-
-		return paraResponse(salvo);
+		return paraResponse(usuarioRepository.saveIfEmailUnique(novo)
+				.orElseThrow(EmailJaCadastradoException::new));
 	}
 
-	public LoginResponse login(LoginRequest request) {
+	public UserResponse autenticar(LoginRequest request) {
 		Usuario usuario = usuarioRepository.findByEmail(normalizarEmail(request.email()))
 				.orElseThrow(CredenciaisInvalidasException::new);
-		if (!passwordEncoder.matches(request.senha(), usuario.getSenhaHash())) {
+		if (!passwordEncoder.matches(request.password(), usuario.getSenhaHash())) {
 			throw new CredenciaisInvalidasException();
 		}
-
-		return new LoginResponse(paraResponse(usuario));
+		return paraResponse(usuario);
 	}
 
-	public UsuarioResponse atualizar(Long id, AtualizarUsuarioRequest request) {
-		Usuario atual = usuarioRepository.findById(id)
-				.orElseThrow(UsuarioNaoEncontradoException::new);
+	public UserResponse buscarPorId(Long id) {
+		return paraResponse(buscar(id));
+	}
+
+	public UserResponse atualizar(Long id, UpdateMeRequest request) {
+		Usuario atual = buscar(id);
 		Usuario atualizado = new Usuario(
 				atual.getId(),
-				request.nome(),
+				request.name(),
 				normalizarEmail(request.email()),
 				atual.getSenhaHash(),
 				atual.getCriadoEm(),
 				agora());
+		salvarAlteracao(atualizado);
+		return paraResponse(atualizado);
+	}
 
-		if (!usuarioRepository.updateIfEmailUnique(atualizado)) {
-			if (usuarioRepository.findById(id).isEmpty()) {
+	public void alterarSenha(Long id, ChangePasswordRequest request) {
+		Usuario atual = buscar(id);
+		if (!passwordEncoder.matches(request.currentPassword(), atual.getSenhaHash())) {
+			throw new SenhaAtualIncorretaException();
+		}
+		salvarAlteracao(new Usuario(
+				atual.getId(),
+				atual.getNome(),
+				atual.getEmail(),
+				passwordEncoder.encode(request.newPassword()),
+				atual.getCriadoEm(),
+				agora()));
+	}
+
+	private void salvarAlteracao(Usuario usuario) {
+		if (!usuarioRepository.updateIfEmailUnique(usuario)) {
+			if (usuarioRepository.findById(usuario.getId()).isEmpty()) {
 				throw new UsuarioNaoEncontradoException();
 			}
 			throw new EmailJaCadastradoException();
 		}
-
-		return paraResponse(atualizado);
 	}
 
-	public UsuarioResponse buscarPorId(Long id) {
-		Usuario usuario = usuarioRepository.findById(id)
-				.orElseThrow(UsuarioNaoEncontradoException::new);
-		return paraResponse(usuario);
+	private Usuario buscar(Long id) {
+		return usuarioRepository.findById(id).orElseThrow(UsuarioNaoEncontradoException::new);
 	}
 
-	public void excluir(Long id) {
-		if (!usuarioRepository.deleteById(id)) {
-			throw new UsuarioNaoEncontradoException();
-		}
-	}
-
-	// Microssegundos: mesma precisão do TIMESTAMPTZ do PostgreSQL
 	private Instant agora() {
 		return Instant.now().truncatedTo(ChronoUnit.MICROS);
 	}
@@ -99,12 +105,7 @@ public class UsuarioService {
 		return email.trim().toLowerCase(Locale.ROOT);
 	}
 
-	private UsuarioResponse paraResponse(Usuario usuario) {
-		return new UsuarioResponse(
-				usuario.getId(),
-				usuario.getNome(),
-				usuario.getEmail(),
-				usuario.getCriadoEm(),
-				usuario.getAtualizadoEm());
+	private UserResponse paraResponse(Usuario usuario) {
+		return new UserResponse(usuario.getId(), usuario.getNome(), usuario.getEmail(), usuario.getCriadoEm());
 	}
 }

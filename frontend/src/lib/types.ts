@@ -29,6 +29,24 @@ export type AcademicWork = {
   doi?: string;
   url: string;
   keywords: string[];
+  hasPdf: boolean;
+};
+
+export type NewWork = {
+  title: string;
+  authors: string[];
+  year: number;
+  type: WorkType;
+  abstract?: string;
+  doi?: string;
+  url?: string;
+  keywords: string[];
+  pdfUrl: string;
+};
+
+export type VisitedWork = {
+  work: AcademicWork;
+  visitedAt: string;
 };
 
 export type Collection = {
@@ -46,4 +64,3 @@ export type HistoryItem = {
   filters: SearchFilters;
   searchedAt: string;
 };
-

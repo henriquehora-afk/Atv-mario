@@ -1,27 +1,23 @@
 package com.biblioteca.api.controller;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.biblioteca.api.dto.request.AtualizarUsuarioRequest;
-import com.biblioteca.api.dto.request.CriarUsuarioRequest;
-import com.biblioteca.api.dto.request.LoginRequest;
-import com.biblioteca.api.dto.response.LoginResponse;
-import com.biblioteca.api.dto.response.UsuarioResponse;
+import com.biblioteca.api.dto.request.ChangePasswordRequest;
+import com.biblioteca.api.dto.request.UpdateMeRequest;
+import com.biblioteca.api.dto.response.MessageResponse;
+import com.biblioteca.api.dto.response.UserResponse;
+import com.biblioteca.api.security.UsuarioLogado;
 import com.biblioteca.api.service.UsuarioService;
 
 import jakarta.validation.Valid;
 
+/** Dados do usuário logado. O id vem do token, nunca da URL. */
 @RestController
-@RequestMapping("/api/usuarios")
+@RequestMapping("/api/v1/users/me")
 public class UsuarioController {
 
 	private final UsuarioService usuarioService;
@@ -30,32 +26,21 @@ public class UsuarioController {
 		this.usuarioService = usuarioService;
 	}
 
-	@PostMapping
-	public ResponseEntity<UsuarioResponse> criar(@Valid @RequestBody CriarUsuarioRequest request) {
-		UsuarioResponse response = usuarioService.criar(request);
-		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+	@GetMapping
+	public UserResponse me(@UsuarioLogado Long usuarioId) {
+		return usuarioService.buscarPorId(usuarioId);
 	}
 
-	@PostMapping("/login")
-	public LoginResponse login(@Valid @RequestBody LoginRequest request) {
-		return usuarioService.login(request);
+	@PutMapping
+	public UserResponse atualizar(@UsuarioLogado Long usuarioId, @Valid @RequestBody UpdateMeRequest request) {
+		return usuarioService.atualizar(usuarioId, request);
 	}
 
-	@GetMapping("/{id}")
-	public UsuarioResponse buscarPorId(@PathVariable("id") Long id) {
-		return usuarioService.buscarPorId(id);
-	}
-
-	@PutMapping("/{id}")
-	public UsuarioResponse atualizar(
-			@PathVariable("id") Long id,
-			@Valid @RequestBody AtualizarUsuarioRequest request) {
-		return usuarioService.atualizar(id, request);
-	}
-
-	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> excluir(@PathVariable("id") Long id) {
-		usuarioService.excluir(id);
-		return ResponseEntity.noContent().build();
+	@PutMapping("/password")
+	public MessageResponse alterarSenha(
+			@UsuarioLogado Long usuarioId,
+			@Valid @RequestBody ChangePasswordRequest request) {
+		usuarioService.alterarSenha(usuarioId, request);
+		return new MessageResponse("Senha alterada com sucesso.");
 	}
 }
