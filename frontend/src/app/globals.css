@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f4f6f2;
+  --foreground: #1c2a22;
+  --primary: #047857;
+  --muted: #5b6b61;
+}
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+h1, h2, h3 { font-family: Georgia, "Times New Roman", serif; }
+button, input, select { font: inherit; }
+a { color: inherit; text-decoration: none; }
+
+/* Versão B: menu lateral fixo em telas grandes; o conteúdo ganha margem à esquerda */
+@media (min-width: 1024px) {
+  .app-sidebar ~ main { margin-left: 16rem; margin-right: auto; }
+}
